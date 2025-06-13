@@ -449,4 +449,22 @@ class Precommit(BaseTool):
 
     def format_response(self, response: str, request: PrecommitRequest, model_info: Optional[dict] = None) -> str:
         """Format the response with commit guidance"""
-        return f"{response}\n\n---\n\n**Commit Status:** If no critical issues found, changes are ready for commit. Otherwise, address issues first and re-run review. Check with user before proceeding with any commit."
+        footer_parts = []
+        
+        # Add model information if available
+        if model_info:
+            model_response = model_info.get("model_response")
+            if model_response and model_response.metadata:
+                actual_model = model_response.metadata.get("model")
+                if actual_model:
+                    # Check if it's different from the requested model
+                    requested_model = model_info.get("model_name", "")
+                    if actual_model != requested_model:
+                        footer_parts.append(f"**Model Used:** {actual_model} (requested: {requested_model})")
+                    else:
+                        footer_parts.append(f"**Model Used:** {actual_model}")
+        
+        footer_parts.append("**Commit Status:** If no critical issues found, changes are ready for commit. Otherwise, address issues first and re-run review. Check with user before proceeding with any commit.")
+        
+        footer = "\n\n".join(footer_parts)
+        return f"{response}\n\n---\n\n{footer}"

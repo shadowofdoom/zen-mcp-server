@@ -269,6 +269,10 @@ class OpenAICompatibleProvider(ModelProvider):
             content = response.choices[0].message.content
             usage = self._extract_usage(response)
 
+            # Log if the actual model differs from requested
+            if response.model != model_name:
+                logging.info(f"{self.FRIENDLY_NAME} used model '{response.model}' instead of requested '{model_name}'")
+            
             return ModelResponse(
                 content=content,
                 usage=usage,

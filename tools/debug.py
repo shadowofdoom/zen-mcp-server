@@ -199,11 +199,28 @@ Focus on finding the root cause and providing actionable solutions."""
         """Format the debugging response"""
         # Get the friendly model name
         model_name = "the model"
+        model_details = []
+        
         if model_info and model_info.get("model_response"):
-            model_name = model_info["model_response"].friendly_name or "the model"
+            model_response = model_info["model_response"]
+            model_name = model_response.friendly_name or "the model"
+            
+            # Add actual model information if available (for OpenRouter)
+            if model_response.metadata:
+                actual_model = model_response.metadata.get("model")
+                if actual_model:
+                    requested_model = model_info.get("model_name", "")
+                    if actual_model != requested_model:
+                        model_details.append(f"**Model Used:** {actual_model} (requested: {requested_model})")
+                    else:
+                        model_details.append(f"**Model Used:** {actual_model}")
 
-        return f"""{response}
-
----
-
-**Next Steps:** Evaluate {model_name}'s recommendations, synthesize the best fix considering potential regressions, and if the root cause has been clearly identified, proceed with implementing the potential fixes."""
+        footer_parts = []
+        
+        if model_details:
+            footer_parts.extend(model_details)
+        
+        footer_parts.append(f"**Next Steps:** Evaluate {model_name}'s recommendations, synthesize the best fix considering potential regressions, and if the root cause has been clearly identified, proceed with implementing the potential fixes.")
+        
+        footer = "\n\n".join(footer_parts)
+        return f"{response}\n\n---\n\n{footer}"

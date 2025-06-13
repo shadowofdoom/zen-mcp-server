@@ -261,11 +261,22 @@ Please provide a code review aligned with the user's context and expectations, f
         Returns:
             str: Formatted response with next steps
         """
-        return f"""{response}
-
----
-
-**Claude's Next Steps:**
+        footer_parts = []
+        
+        # Add model information if available
+        if model_info:
+            model_response = model_info.get("model_response")
+            if model_response and model_response.metadata:
+                actual_model = model_response.metadata.get("model")
+                if actual_model:
+                    # Check if it's different from the requested model
+                    requested_model = model_info.get("model_name", "")
+                    if actual_model != requested_model:
+                        footer_parts.append(f"**Model Used:** {actual_model} (requested: {requested_model})")
+                    else:
+                        footer_parts.append(f"**Model Used:** {actual_model}")
+        
+        footer_parts.append("""**Claude's Next Steps:**
 
 1. **Understand the Context**: First examine the specific functions, files, and code sections mentioned in the review to understand each issue thoroughly.
 
@@ -273,4 +284,7 @@ Please provide a code review aligned with the user's context and expectations, f
 
 3. **Implement Selected Fixes**: Only implement the fixes the user chooses, ensuring each change is made correctly and maintains code quality.
 
-Remember: Always understand the code context before suggesting fixes, and let the user decide which improvements to implement."""
+Remember: Always understand the code context before suggesting fixes, and let the user decide which improvements to implement.""")
+        
+        footer = "\n\n".join(footer_parts)
+        return f"{response}\n\n---\n\n{footer}"

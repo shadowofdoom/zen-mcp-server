@@ -154,4 +154,22 @@ Please provide a thoughtful, comprehensive response:"""
 
     def format_response(self, response: str, request: ChatRequest, model_info: Optional[dict] = None) -> str:
         """Format the chat response"""
-        return f"{response}\n\n---\n\n**Claude's Turn:** Evaluate this perspective alongside your analysis to form a comprehensive solution and continue with the user's request and task at hand."
+        footer_parts = []
+        
+        # Add model information if available
+        if model_info:
+            model_response = model_info.get("model_response")
+            if model_response and model_response.metadata:
+                actual_model = model_response.metadata.get("model")
+                if actual_model:
+                    # Check if it's different from the requested model
+                    requested_model = model_info.get("model_name", "")
+                    if actual_model != requested_model:
+                        footer_parts.append(f"**Model Used:** {actual_model} (requested: {requested_model})")
+                    else:
+                        footer_parts.append(f"**Model Used:** {actual_model}")
+        
+        footer_parts.append("**Claude's Turn:** Evaluate this perspective alongside your analysis to form a comprehensive solution and continue with the user's request and task at hand.")
+        
+        footer = "\n\n".join(footer_parts)
+        return f"{response}\n\n---\n\n{footer}"

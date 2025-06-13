@@ -1306,7 +1306,7 @@ When recommending searches, be specific about what information you need and why 
 
         if not provider:
             # Try to determine provider from model name patterns
-            if "gemini" in model_name.lower() or model_name.lower() in ["flash", "pro"]:
+            if "gemini" in model_name.lower() or model_name.lower() == "flash":
                 # Register Gemini provider if not already registered
                 from providers.base import ProviderType
                 from providers.gemini import GeminiModelProvider

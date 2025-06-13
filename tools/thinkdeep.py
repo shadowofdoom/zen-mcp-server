@@ -193,14 +193,29 @@ Please provide deep analysis that extends Claude's thinking with:
         """Format the response with clear attribution and critical thinking prompt"""
         # Get the friendly model name
         model_name = "your fellow developer"
+        model_details = []
+        
         if model_info and model_info.get("model_response"):
-            model_name = model_info["model_response"].friendly_name or "your fellow developer"
+            model_response = model_info["model_response"]
+            model_name = model_response.friendly_name or "your fellow developer"
+            
+            # Add actual model information if available (for OpenRouter)
+            if model_response.metadata:
+                actual_model = model_response.metadata.get("model")
+                if actual_model:
+                    requested_model = model_info.get("model_name", "")
+                    if actual_model != requested_model:
+                        model_details.append(f"**Model Used:** {actual_model} (requested: {requested_model})")
+                    else:
+                        model_details.append(f"**Model Used:** {actual_model}")
 
-        return f"""{response}
-
----
-
-## Critical Evaluation Required
+        footer_parts = [response, "---"]
+        
+        if model_details:
+            footer_parts.extend(model_details)
+            footer_parts.append("")  # Add blank line
+        
+        footer_parts.append(f"""## Critical Evaluation Required
 
 Claude, please critically evaluate {model_name}'s analysis by thinking hard about the following:
 
@@ -209,4 +224,6 @@ Claude, please critically evaluate {model_name}'s analysis by thinking hard abou
 3. **Risks** - Hidden complexities, edge cases, potential failure modes
 4. **Final recommendation** - Synthesize both perspectives, then think deeply further to explore additional considerations and arrive at the best technical solution
 
-Remember: Use {model_name}'s insights to enhance, not replace, your analysis."""
+Remember: Use {model_name}'s insights to enhance, not replace, your analysis.""")
+
+        return "\n\n".join(footer_parts)
